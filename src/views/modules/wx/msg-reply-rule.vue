@@ -13,7 +13,7 @@
                 <el-button v-if="isAuth('wx:msgreplyrule:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
             </el-form-item>
         </el-form>
-        <el-table :data="dataList" border type="expand" v-loading="dataListLoading" @selection-change="selectionChangeHandle" style="width: 100%;">
+        <el-table :data="dataList" border type="expand" v-loading="dataListLoading" @selection-change="selectionChangeHandle" style="width: 100%;" :row-class-name="tableRowClassName">
             <el-table-column type="expand">
                 <template slot-scope="props">
                     <el-form label-position="left" inline class="demo-table-expand">
@@ -165,7 +165,20 @@ export default {
         },
         replyTypeFormat(row, column, cellValue) {
             return this.KefuMsgType[cellValue];
+        },
+        tableRowClassName({row, rowIndex}) {
+            if (row.globalRule) {
+                console.log("Global!!!");
+                return 'global-row';
+            }
+            return '';
         }
     }
 }
 </script>
+
+<style>
+  .el-table .global-row {
+    background-color: oldlace;
+  }
+</style>

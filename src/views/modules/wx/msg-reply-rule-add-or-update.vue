@@ -2,9 +2,12 @@
     <el-dialog :title="!dataForm.id ? '新增' : '修改'" :close-on-click-modal="false" :visible.sync="visible">
         <el-form :model="dataForm" :rules="dataRule" ref="dataForm" label-width="80px">
             <el-form-item label="规则名称" prop="ruleName">
-                <el-input v-model="dataForm.ruleName" placeholder="规则名称"></el-input>
+                <el-input v-model="dataForm.ruleName" placeholder="规则名称（若为批量规则建议命名为：批量规则-xxx）"></el-input>
             </el-form-item>
-            <el-form-item label="匹配词" prop="matchValue">
+            <el-form-item label="批量规则" prop="globalRule">
+                <el-switch v-model="dataForm.globalRule" :active-value="true" :inactive-value="false"></el-switch>
+            </el-form-item>
+            <el-form-item label="匹配词" prop="matchValue" v-if="!dataForm.globalRule">
                 <tags-editor v-model="dataForm.matchValue"></tags-editor>
             </el-form-item>
             <el-row>
@@ -82,6 +85,7 @@ export default {
                 ruleId: 0,
                 appid:'',
                 ruleName: "",
+                globalRule: false,
                 exactMatch: true,
                 matchValue: "",
                 replyType: 'text',
