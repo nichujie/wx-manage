@@ -11,8 +11,8 @@
                 <el-col :span="12">
                     <el-form-item label="作用范围" prop="appid">
                         <el-select v-model="dataForm.appid" placeholder="作用范围">
-                            <el-option label="全部公众号" value=""></el-option>
                             <el-option label="当前公众号" :value="selectedAppid"></el-option>
+                            <!-- <el-option label="全部公众号" value=""></el-option> -->
                         </el-select>
                     </el-form-item>
                 </el-col>
@@ -82,7 +82,7 @@ export default {
                 ruleId: 0,
                 appid:'',
                 ruleName: "",
-                exactMatch: false,
+                exactMatch: true,
                 matchValue: "",
                 replyType: 'text',
                 replyContent: "",
@@ -115,6 +115,9 @@ export default {
                 ]
             }
         };
+    },
+    mounted() {
+        this.dataForm.appid = this.$store.state.wxAccount.selectedAppid;
     },
     computed: mapState({
         KefuMsgType: state=>state.message.KefuMsgType,

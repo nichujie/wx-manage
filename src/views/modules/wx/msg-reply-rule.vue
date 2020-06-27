@@ -2,6 +2,9 @@
     <div class="mod-config">
         <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
             <el-form-item>
+                <el-input v-model="dataForm.ruleName" placeholder="匹配规则名称" clearable></el-input>
+            </el-form-item>
+            <el-form-item>
                 <el-input v-model="dataForm.matchValue" placeholder="匹配关键词" clearable></el-input>
             </el-form-item>
             <el-form-item>
@@ -69,6 +72,7 @@ export default {
     data() {
         return {
             dataForm: {
+                ruleName: '',
                 matchValue: ''
             },
             dataList: [],
@@ -97,6 +101,7 @@ export default {
                 params: this.$http.adornParams({
                     'page': this.pageIndex,
                     'limit': this.pageSize,
+                    'ruleName': this.dataForm.ruleName,
                     'matchValue': this.dataForm.matchValue
                 })
             }).then(({ data }) => {
