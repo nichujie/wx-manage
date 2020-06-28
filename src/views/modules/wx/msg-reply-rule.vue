@@ -168,7 +168,6 @@ export default {
         },
         tableRowClassName({row, rowIndex}) {
             if (row.globalRule) {
-                console.log("Global!!!");
                 return 'global-row';
             }
             return '';
