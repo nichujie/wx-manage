@@ -197,7 +197,11 @@ export default {
                         params: this.$http.adornParams()
                     }).then(({ data }) => {
                         if (data && data.code === 200) {
-                            this.dataForm = data.msgReplyRule;
+                            if (data.msgReplyRule !== null) {
+                                Object.keys(this.dataForm).forEach(key => {
+                                    this.dataForm[key] = data.msgReplyRule[key];
+                                });
+                            }
                             if (data.msgReplyRule.replyType === 'news') {
                                 Object.assign(this.newsForm, JSON.parse(data.msgReplyRule.replyContent));
                             }
