@@ -48,6 +48,8 @@
             </el-table-column>
             <el-table-column prop="replyContent" header-align="center" align="center" show-overflow-tooltip label="回复内容">
             </el-table-column>
+            <el-table-column prop="priority" header-align="center" align="center" show-overflow-tooltip label="优先级">
+            </el-table-column>
             <el-table-column fixed="right" header-align="center" align="center" width="150" label="操作">
                 <template slot-scope="scope">
                     <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.ruleId)">修改</el-button>

@@ -32,6 +32,13 @@
                         </el-select>
                     </el-form-item>
                 </el-col>
+                <el-col :span="12">
+                    <el-tooltip class="item" effect="dark" content="数字越大，越晚发送" placement="top">
+                        <el-form-item label="优先级" prop="priority">
+                            <el-input-number v-model="dataForm.priority" size="small" :min="0"></el-input-number>
+                        </el-form-item>
+                    </el-tooltip>
+                </el-col>
             </el-row>
             <el-form-item label="回复内容" prop="replyContent" v-if="dataForm.replyType !== 'news'">
                 <el-input v-model="dataForm.replyContent" type="textarea" :rows="5" placeholder="文本、图文ID、media_id、json配置"></el-input>
@@ -89,7 +96,7 @@
         </el-form>
         <span slot="footer" class="dialog-footer">
             <el-button @click="visible = false">取消</el-button>
-            <el-button type="primary" @click="dataFormSubmit()">确定</el-button>
+            <el-button type="primary" @click="dataFormSubmit()" :loading="submitting">确定</el-button>
         </span>
         <assets-selector v-if="assetsSelectorVisible && assetsType" :visible="assetsSelectorVisible" :selectType="assetsType" @selected="onAssetsSelect"></assets-selector>
     </el-dialog>
@@ -106,6 +113,7 @@ export default {
         return {
             activeNames: [],
             visible: false,
+            submitting: false,
             assetsSelectorVisible:false,
             dataForm: {
                 ruleId: 0,
@@ -113,6 +121,7 @@ export default {
                 ruleName: "",
                 globalRule: false,
                 exactMatch: true,
+                priority: 0,
                 matchValue: "",
                 replyType: 'text',
                 replyContent: "",
@@ -147,6 +156,9 @@ export default {
                     { required: true, message: "是否精确匹配不能为空", trigger: "blur" }
                 ],
                 globalRule: [
+                    { required: true, message: "是否全局规则不能为空", trigger: "blur" }
+                ],
+                priority: [
                     { required: true, message: "是否全局规则不能为空", trigger: "blur" }
                 ],
                 effectTimeStart: [
@@ -212,12 +224,13 @@ export default {
         },
         // 表单提交
         dataFormSubmit() {
+            if (this.submitting) return;
             this.$refs["dataForm"].validate(valid => {
                 if (valid) {
                     if (this.dataForm.replyType === 'news') {
                         this.dataForm.replyContent = JSON.stringify(this.newsForm);
                     }
-                    console.log(this.dataForm);
+                    this.submitting = true;
                     this.$http({
                         url: this.$http.adornUrl(`/manage/msgReplyRule/${!this.dataForm.ruleId ? "save" : "update"}`),
                         method: "post",
@@ -227,15 +240,15 @@ export default {
                             this.$message({
                                 message: "操作成功",
                                 type: "success",
-                                duration: 1500,
-                                onClose: () => {
-                                    this.visible = false;
-                                    this.$emit("refreshDataList");
-                                }
+                                duration: 1500
                             });
+                            this.visible = false;
+                            this.$emit("refreshDataList");
                         } else {
                             this.$message.error(data.msg);
                         }
+                    }).finally(() => {
+                        this.submitting = false;
                     });
                 }
             });
