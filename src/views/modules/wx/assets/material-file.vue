@@ -24,7 +24,7 @@
                 </div>
             </div>
         </div>
-        <el-pagination @current-change="currentChangeHandle" :current-page="pageIndex" :page-sizes="[20]" :page-size="20" :total="totalCount" layout="total, prev,pager, next, jumper">
+        <el-pagination @current-change="currentChangeHandle" :current-page.sync="pageIndex" :page-sizes="[20]" :page-size="20" :total="totalCount" layout="total, prev,pager, next, jumper">
         </el-pagination>
         <!-- 弹窗, 新增 / 修改 -->
         <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="onChange"></add-or-update>
@@ -79,7 +79,6 @@ export default {
                 if (data && data.code == 200) {
                     this.dataList = data.data.items
                     this.totalCount = data.data.totalCount
-                     this.pageIndex++;
                 } else {
                     this.$message.error(data.msg);
                 }
