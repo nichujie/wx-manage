@@ -3,6 +3,7 @@
         <el-form :inline="true" :model="dataForm">
             <el-form-item>
                 <el-button size="mini" v-if="isAuth('wx:wxassets:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+                <el-button size="mini" v-if="isAuth('wx:wxassets:list')" type="primary" @click="clearCacheHandle()">同步素材</el-button>
             </el-form-item>
         </el-form>
         <div v-loading="dataListLoading">
@@ -107,6 +108,32 @@ export default {
                     url: this.$http.adornUrl('/manage/wxAssets/materialDelete'),
                     method: 'post',
                     data: { mediaId: id }
+                }).then(({ data }) => {
+                    if (data && data.code === 200) {
+                        this.$message({
+                            message: '操作成功',
+                            type: 'success',
+                            duration: 1500,
+                            onClose: () => {
+                                this.getDataList()
+                                this.$emit('change')
+                            }
+                        })
+                    } else {
+                        this.$message.error(data.msg)
+                    }
+                })
+            })
+        },
+        clearCacheHandle() {
+            this.$confirm('确定清除缓存并同步素材？（注意：清除缓存后将从微信服务器同步素材，这将消耗接口调用次数，建议在微信后台一次添加多个素材后再使用同步）', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$http({
+                    url: this.$http.adornUrl('/manage/wxAssets/clearCache'),
+                    method: 'post'
                 }).then(({ data }) => {
                     if (data && data.code === 200) {
                         this.$message({
