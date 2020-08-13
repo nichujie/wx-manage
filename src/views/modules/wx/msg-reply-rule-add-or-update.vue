@@ -41,8 +41,8 @@
                 </el-col>
             </el-row>
             <el-form-item label="回复内容" prop="replyContent" v-if="dataForm.replyType !== 'news'">
-                <el-input v-model="dataForm.replyContent" type="textarea" :rows="5" placeholder="文本、图文ID、media_id、json配置"></el-input>
-                <el-button type="text" v-show="'text'==dataForm.replyType" @click="addLink">插入链接</el-button>
+                <quill-editor ref="myQuillEditor" v-model="textContent" :options="editorOption" v-if="dataForm.replyType === 'text'"></quill-editor>
+                <el-input v-model="dataForm.replyContent" type="textarea" :rows="5" placeholder="文本、图文ID、media_id、json配置" v-else></el-input>
                 <el-button type="text" v-show="assetsType" @click="assetsSelectorVisible=true">
                     从素材库中选择<span v-if="'miniprogrampage'==dataForm.replyType || 'music'==dataForm.replyType">缩略图</span>
                 </el-button>
@@ -104,10 +104,18 @@
 
 <script>
 import { mapState } from 'vuex'
+import { quillEditor } from 'vue-quill-editor'
+import { Parser } from 'htmlparser2';
+
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+
 export default {
     components: {
         tagsEditor: () => import('@/components/tags-editor'),
-        AssetsSelector:()=>import('./assets/assets-selector')
+        AssetsSelector:()=>import('./assets/assets-selector'),
+        quillEditor
     },
     data() {
         return {
@@ -175,6 +183,14 @@ export default {
                 url: [
                     { required: true, message: "文章链接不能为空", trigger: "blur" }
                 ]
+            },
+            textContent: '',
+            editorOption: {
+                placeholder: '文本、图文ID、media_id、json配置...',
+                formats: ['link'],
+                modules: {
+                    toolbar: [['link']]
+                }
             }
         };
     },
@@ -194,6 +210,40 @@ export default {
                 'music':'image'
             }
             return config[this.dataForm.replyType] || ''
+        },
+        parsedContent() {
+            let result = '';
+            let first = true;
+            const parser = new Parser({
+                onopentag(name, attribs) {
+                    if (name === 'br') return;
+                    if (name === 'p') {
+                        if (!first) result += '\n';
+                    } else {
+                        result += "<" + name;
+                        for (let key in attribs) {
+                            result += " " + key + '="' + attribs[key] + '"';
+                        }
+                        result += ">";
+                    }
+                },
+                ontext(text) {
+                    result += text
+                },
+                onclosetag(tag) {
+                    if (tag === 'br') return;
+                    if (tag === 'p') {
+                        first = false;
+                    } else {
+                        result += "</" + tag + ">";
+                    }
+                }
+            },
+            {decodeEntities: true}
+            );
+            parser.write(this.textContent);
+            parser.end();
+            return result
         }
     }),
     methods: {
@@ -202,6 +252,7 @@ export default {
             this.visible = true;
             this.$nextTick(() => {
                 this.$refs["dataForm"].resetFields();
+                this.textContent = '';
                 if (this.dataForm.ruleId) {
                     this.$http({
                         url: this.$http.adornUrl( `/manage/msgReplyRule/info/${this.dataForm.ruleId}` ),
@@ -217,6 +268,13 @@ export default {
                             if (data.msgReplyRule.replyType === 'news') {
                                 Object.assign(this.newsForm, JSON.parse(data.msgReplyRule.replyContent));
                             }
+                            if (data.msgReplyRule.replyType === 'text') {
+                                let result = '';
+                                data.msgReplyRule['replyContent'].split(/\r\n|\r|\n/).forEach(value => {
+                                    result += '<p>' + value + '</p>';
+                                });
+                                this.textContent = result;
+                            }
                         }
                     });
                 }
@@ -225,11 +283,14 @@ export default {
         // 表单提交
         dataFormSubmit() {
             if (this.submitting) return;
+            if (this.dataForm.replyType === 'news') {
+                this.dataForm.replyContent = JSON.stringify(this.newsForm);
+            }
+            if (this.dataForm.replyType === 'text') {
+                this.dataForm.replyContent = this.parsedContent;
+            }
             this.$refs["dataForm"].validate(valid => {
                 if (valid) {
-                    if (this.dataForm.replyType === 'news') {
-                        this.dataForm.replyContent = JSON.stringify(this.newsForm);
-                    }
                     this.submitting = true;
                     this.$http({
                         url: this.$http.adornUrl(`/manage/msgReplyRule/${!this.dataForm.ruleId ? "save" : "update"}`),

@@ -29,7 +29,7 @@
                     </template>
                 </div>
             </div>
-            <el-pagination @current-change="currentChangeHandle" :current-page="pageIndex" :page-size="pageSize" :total="totalCount" layout="total, prev,pager, next, jumper">
+            <el-pagination @current-change="currentChangeHandle" :current-page.sync="pageIndex" :page-size="pageSize" :total="totalCount" layout="total, prev,pager, next, jumper">
             </el-pagination>
         </div>
         <!-- 新增 / 修改 -->
@@ -81,7 +81,6 @@ export default {
                     'page': this.pageIndex
                 })
             }).then(({ data }) => {
-
                 if (data.code == 200) {
                     this.dataList = data.data.items
                     this.totalCount = data.data.totalCount
